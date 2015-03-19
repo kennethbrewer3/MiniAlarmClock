@@ -44,6 +44,7 @@ public class MainActivity extends ActionBarActivity {
     };
 
     private void updateTime() {
+        is24 = DateFormat.is24HourFormat(this);
         time = new GregorianCalendar();
         textCurrentTime.setText(buildTimeString(true));
     }
