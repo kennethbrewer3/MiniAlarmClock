@@ -1,8 +1,10 @@
 package com.mobileappscompany.training.minialarmclock;
 
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -18,12 +20,15 @@ public class MainActivity extends ActionBarActivity {
 
     private TextView textCurrentTime;
 
+    private boolean is24;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        time = new GregorianCalendar();
+        is24 = DateFormat.is24HourFormat(this);
+
         textCurrentTime = (TextView)findViewById(R.id.textCurrentTime);
         updateTime();
 
@@ -40,13 +45,23 @@ public class MainActivity extends ActionBarActivity {
 
     private void updateTime() {
         time = new GregorianCalendar();
-        textCurrentTime.setText(buildTimeString());
+        textCurrentTime.setText(buildTimeString(true));
     }
 
-    private String buildTimeString() {
-        return time.get(Calendar.HOUR)   + ":" +
-               (time.get(Calendar.MINUTE)<10?"0":"") + time.get(Calendar.MINUTE) + ":" +
-               (time.get(Calendar.SECOND)<10?"0":"") + time.get(Calendar.SECOND);
+    private String buildTimeString(boolean showSeconds) {
+        String timeString = "";
+        timeString += (is24?time.get(Calendar.HOUR_OF_DAY):time.get(Calendar.HOUR));
+        timeString += ":";
+        timeString += (time.get(Calendar.MINUTE)<10?"0":"");
+        timeString += time.get(Calendar.MINUTE);
+        if(showSeconds) {
+            timeString += ":";
+            timeString += (time.get(Calendar.SECOND)<10?"0":"");
+            timeString += time.get(Calendar.SECOND);
+        }
+        timeString += (is24?"":(time.get(Calendar.AM_PM) == Calendar.AM?"AM":"PM"));
+
+        return timeString;
     }
 
 

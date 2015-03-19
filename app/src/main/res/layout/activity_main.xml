@@ -9,8 +9,8 @@
         android:id="@+id/textCurrentTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="12:00"
-        android:textSize="72dp"
+        android:text="12:00:00AM"
+        android:textSize="60dp"
         android:layout_centerHorizontal="true"
         />
     <View
