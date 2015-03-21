@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
 
 /**
  * Created by Android1 on 3/20/2015.
@@ -44,6 +45,20 @@ public class AlarmListItem extends RelativeLayout {
         inflater.inflate(R.layout.alarm_list_item, this);
 
         initControls();
+
+        this.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
+
+        this.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Cleek!");
+            }
+        });
     }
 
     private void initControls() {
@@ -56,6 +71,7 @@ public class AlarmListItem extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 alarm.setOn(switchAlarmOn.isChecked());
+                Log.d(TAG,"switchAlarmOn: Alarm on? " + alarm.isOn());
             }
         });
 
@@ -86,36 +102,36 @@ public class AlarmListItem extends RelativeLayout {
     private String buildRepeatDays() {
         StringBuilder builder = new StringBuilder();
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)64)) {
+        if(checkBitMask(alarm.getRepeatDays(), Day.SUNDAY.getBitmask())) {
             builder.append(context.getString(R.string.sunday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)32)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.MONDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.monday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)16)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.TUESDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.tuesday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)8)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.WEDNESDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.wednesday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)4)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.THURSDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.thursday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)2)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.FRIDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.friday_abbrev));
         }
 
-        if(checkBitMask(alarm.getRepeatDays(),(byte)1)) {
+        if(checkBitMask(alarm.getRepeatDays(),Day.SATURDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.saturday_abbrev));
         }

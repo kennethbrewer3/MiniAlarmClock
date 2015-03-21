@@ -2,6 +2,9 @@ package com.mobileappscompany.training.minialarmclock.com.mobileappscompany.trai
 
 import android.net.Uri;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 /**
  * Created by Android1 on 3/20/2015.
  */
@@ -11,7 +14,21 @@ public class Alarm {
     private int minute;
     private String label;
     private byte repeatDays;
+    private SoundType soundType;
     private Uri soundToPlay;
+    private boolean vibrate;
+    private boolean volumeCrescendo;
+    private Duration timeToMaxVolume;
+    private int volume;
+    private SnoozeMethod snoozeMethod;
+    private DismissMethod dismissMethod;
+    private boolean onInSilentMode;
+    private Duration autoSnoozeDuration;
+    private Duration autoDismissDuration;
+
+    private boolean snoozed;
+    private boolean triggered;
+    private boolean hasBeenTriggeredToday;
 
     public Alarm(int hour, int minute) {
         this.hour   = hour;
@@ -19,6 +36,7 @@ public class Alarm {
 
         //By default a new alarm will be on
         on = true;
+        hasBeenTriggeredToday = false;
     }
 
     public boolean isOn() {
@@ -61,11 +79,116 @@ public class Alarm {
         this.repeatDays = repeatDays;
     }
 
+    public SoundType getSoundType() {
+        return soundType;
+    }
+
+    public void setSoundType(SoundType soundType) {
+        this.soundType = soundType;
+    }
+
     public Uri getSoundToPlay() {
         return soundToPlay;
     }
 
     public void setSoundToPlay(Uri soundToPlay) {
         this.soundToPlay = soundToPlay;
+    }
+
+    public boolean isVibrate() {
+        return vibrate;
+    }
+
+    public void setVibrate(boolean vibrate) {
+        this.vibrate = vibrate;
+    }
+
+    public boolean isVolumeCrescendo() {
+        return volumeCrescendo;
+    }
+
+    public void setVolumeCrescendo(boolean volumeCrescendo) {
+        this.volumeCrescendo = volumeCrescendo;
+    }
+
+    public Duration getTimeToMaxVolume() {
+        return timeToMaxVolume;
+    }
+
+    public void setTimeToMaxVolume(Duration timeToMaxVolume) {
+        this.timeToMaxVolume = timeToMaxVolume;
+    }
+
+    public int getVolume() {
+        return volume;
+    }
+
+    public void setVolume(int volume) {
+        this.volume = volume;
+    }
+
+    public SnoozeMethod getSnoozeMethod() {
+        return snoozeMethod;
+    }
+
+    public void setSnoozeMethod(SnoozeMethod snoozeMethod) {
+        this.snoozeMethod = snoozeMethod;
+    }
+
+    public DismissMethod getDismissMethod() {
+        return dismissMethod;
+    }
+
+    public void setDismissMethod(DismissMethod dismissMethod) {
+        this.dismissMethod = dismissMethod;
+    }
+
+    public boolean isOnInSilentMode() {
+        return onInSilentMode;
+    }
+
+    public void setOnInSilentMode(boolean onInSilentMode) {
+        this.onInSilentMode = onInSilentMode;
+    }
+
+    public Duration getAutoSnoozeDuration() {
+        return autoSnoozeDuration;
+    }
+
+    public void setAutoSnoozeDuration(Duration autoSnoozeDuration) {
+        this.autoSnoozeDuration = autoSnoozeDuration;
+    }
+
+    public Duration getAutoDismissDuration() {
+        return autoDismissDuration;
+    }
+
+    public void setAutoDismissDuration(Duration autoDismissDuration) {
+        this.autoDismissDuration = autoDismissDuration;
+    }
+
+    public void cancelTrigger(GregorianCalendar currentDay) {
+        triggered = false;
+        hasBeenTriggeredToday = true;
+
+        int dayIndex = currentDay.get(Calendar.DAY_OF_WEEK) - 1;
+        Day tomorrow = Day.values()[dayIndex+1];
+        if((repeatDays & tomorrow.getBitmask()) == 1) {
+            on = true;
+        } else {
+            on = false;
+        }
+    }
+
+    public boolean isTriggered() {
+        return triggered;
+    }
+
+    public void checkForTrigger(int hour, int minute) {
+        if(hasBeenTriggeredToday) return;
+
+        if(this.hour == hour && this.minute == minute) {
+            triggered = true;
+        }
     }
 }

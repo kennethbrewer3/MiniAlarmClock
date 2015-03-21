@@ -5,12 +5,16 @@ import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,6 +22,8 @@ import java.util.GregorianCalendar;
 
 
 public class MainActivity extends ActionBarActivity {
+
+    private static final String TAG = "MainActivity";
 
     private GregorianCalendar time;
     private Handler mHandler = new Handler();
@@ -52,20 +58,36 @@ public class MainActivity extends ActionBarActivity {
 
         listAlarms.setAdapter(alarmAdapter);
         alarmAdapter.notifyDataSetChanged();
+
+        listAlarms.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG,"Long Cleek!");
+                return false;
+            }
+        });
+
     }
 
     private Alarm makeAlarm() {
-        Alarm alarm = new Alarm(13,30);
+        int offset = 1;
+        GregorianCalendar calendar = new GregorianCalendar();
+        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
+                                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
 
         alarm.setLabel("First alarm");
-        alarm.setRepeatDays((byte)127);
+        //alarm.setRepeatDays((byte)127);
 
         return alarm;
     }
 
     private Alarm makeAnotherAlarm() {
-        Alarm alarm = new Alarm(9,9);
+        int offset = 1;
+        GregorianCalendar calendar = new GregorianCalendar();
+        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
 
+        alarm.setLabel("Second alarm");
 
         return alarm;
     }
@@ -82,6 +104,22 @@ public class MainActivity extends ActionBarActivity {
         is24 = DateFormat.is24HourFormat(this);
         time = new GregorianCalendar();
         textCurrentTime.setText(buildTimeString(true));
+        checkAlarms(time);
+//        Log.d(TAG,"Day of week value: " + Day.values()[time.get(Calendar.DAY_OF_WEEK)-1].toString());
+    }
+
+    private void checkAlarms(GregorianCalendar calendar) {
+        for(int count = 0; count < alarmAdapter.getCount(); count++) {
+            Alarm alarm = alarmAdapter.getItem(count);
+            if(!alarm.isOn()) continue;
+
+            alarm.checkForTrigger(calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE));
+
+            if(alarm.isTriggered()) {
+                Log.d(TAG,alarm.getLabel() + ": Buzz!");
+            }
+        }
     }
 
     private String buildTimeString(boolean showSeconds) {
