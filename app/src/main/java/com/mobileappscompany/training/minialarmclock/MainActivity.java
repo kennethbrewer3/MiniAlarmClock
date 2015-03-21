@@ -7,8 +7,12 @@ import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -19,13 +23,20 @@ public class MainActivity extends ActionBarActivity {
     private Handler mHandler = new Handler();
 
     private TextView textCurrentTime;
+    private ListView listAlarms;
 
     private boolean is24;
+
+    private AlarmArrayAdapter alarmAdapter;
+    private ArrayList<Alarm> alarms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        alarms = new ArrayList();
+
+        alarmAdapter = new AlarmArrayAdapter(this,android.R.layout.simple_list_item_1,R.id.textCurrentTime,alarms);
 
         is24 = DateFormat.is24HourFormat(this);
 
@@ -33,6 +44,30 @@ public class MainActivity extends ActionBarActivity {
         updateTime();
 
         mHandler.postDelayed(updateTimeRunnable, 1000);
+
+        listAlarms = (ListView)findViewById(R.id.listAlarms);
+
+        alarmAdapter.add(makeAlarm());
+        alarmAdapter.add(makeAnotherAlarm());
+
+        listAlarms.setAdapter(alarmAdapter);
+        alarmAdapter.notifyDataSetChanged();
+    }
+
+    private Alarm makeAlarm() {
+        Alarm alarm = new Alarm(13,30);
+
+        alarm.setLabel("First alarm");
+        alarm.setRepeatDays((byte)127);
+
+        return alarm;
+    }
+
+    private Alarm makeAnotherAlarm() {
+        Alarm alarm = new Alarm(9,9);
+
+
+        return alarm;
     }
 
     private Runnable updateTimeRunnable = new Runnable () {

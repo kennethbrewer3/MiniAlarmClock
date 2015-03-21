@@ -3,4 +3,12 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="sunday_abbrev">Sun</string>
+    <string name="monday_abbrev">Mon</string>
+    <string name="tuesday_abbrev">Tue</string>
+    <string name="wednesday_abbrev">Wed</string>
+    <string name="thursday_abbrev">Thu</string>
+    <string name="friday_abbrev">Fri</string>
+    <string name="saturday_abbrev">Sat</string>
 </resources>

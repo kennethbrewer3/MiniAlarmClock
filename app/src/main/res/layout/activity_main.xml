@@ -17,4 +17,12 @@
         android:id="@+id/listDivider"
         style="@style/Divider"
         android:layout_below="@+id/textCurrentTime" />
+
+    <ListView
+        android:id="@+id/listAlarms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listDivider">
+
+        </ListView>
 </RelativeLayout>
