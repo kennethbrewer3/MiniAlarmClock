@@ -1,5 +1,7 @@
 package com.mobileappscompany.training.minialarmclock;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
@@ -14,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Constants;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
 
 import java.util.ArrayList;
@@ -35,6 +38,8 @@ public class MainActivity extends ActionBarActivity {
 
     private AlarmArrayAdapter alarmAdapter;
     private ArrayList<Alarm> alarms;
+
+    private boolean alarmTriggered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
                 return false;
             }
         });
-
+        alarmTriggered = false;
     }
 
     private Alarm makeAlarm() {
@@ -82,7 +87,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private Alarm makeAnotherAlarm() {
-        int offset = 1;
+        int offset = 2;
         GregorianCalendar calendar = new GregorianCalendar();
         Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
@@ -116,10 +121,21 @@ public class MainActivity extends ActionBarActivity {
             alarm.checkForTrigger(calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE));
 
-            if(alarm.isTriggered()) {
-                Log.d(TAG,alarm.getLabel() + ": Buzz!");
+            if(alarm.isTriggered() && !alarmTriggered) {
+                alarmTriggered = true;
+                Intent intent = new Intent(getApplicationContext(),AlarmTriggeredActivity.class);
+                intent.putExtra(Constants.TRIGGERED_ALARM,alarm);
+                startActivityForResult(intent,Constants.TRIGGERED_ALARM_RESULT_CODE);
             }
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Alarm alarm = (Alarm)data.getParcelableExtra(Constants.DISMISSED_ALARM);
+        alarmAdapter.getItem(alarmAdapter.getPosition(alarm)).setOn(false);
+        alarmTriggered = false;
+        alarmAdapter.notifyDataSetChanged();
     }
 
     private String buildTimeString(boolean showSeconds) {

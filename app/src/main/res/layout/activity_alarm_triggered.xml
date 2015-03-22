@@ -1,0 +1,63 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.mobileappscompany.training.minialarmclock.AlarmTriggeredActivity">
+
+    <TextView
+        android:id="@+id/textAlarmTriggeredLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hello_world"
+        android:layout_centerHorizontal="true"
+        android:textSize="40dp"
+        />
+    <View
+        android:id="@+id/dividerBelowTextAlarmTriggeredLabel"
+        style="@style/Divider"
+        android:layout_below="@id/textAlarmTriggeredLabel" />
+    <TextView
+        android:id="@+id/textAlarmTriggeredCurrentTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12:00:00AM"
+        android:textSize="60dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/dividerBelowTextAlarmTriggeredLabel"
+        />
+    <View
+        android:id="@+id/dividerBelowTextAlarmTriggeredCurrentTime"
+        style="@style/Divider"
+        android:layout_below="@id/textAlarmTriggeredCurrentTime" />
+    <Button
+        android:id="@+id/buttonDismiss"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dividerBelowTextAlarmTriggeredCurrentTime"
+        android:text="DISMISS"
+        android:textSize="60dp"
+        />
+    <View
+        android:id="@+id/dividerBelowButtonDismiss"
+        style="@style/Divider"
+        android:layout_below="@id/buttonDismiss" />
+    <Button
+        android:id="@+id/buttonSnooze"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dividerBelowButtonDismiss"
+        android:text="SNOOZE"
+        android:textSize="60dp"
+        android:layout_alignParentBottom="true"
+        />
+    <View
+        android:id="@+id/dividerBelowButtonSnooze"
+        style="@style/Divider"
+        android:layout_below="@id/buttonSnooze" />
+
+</RelativeLayout>

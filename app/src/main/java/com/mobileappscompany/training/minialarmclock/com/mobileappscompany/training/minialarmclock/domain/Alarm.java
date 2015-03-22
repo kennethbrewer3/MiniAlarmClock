@@ -1,6 +1,8 @@
 package com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -8,7 +10,7 @@ import java.util.GregorianCalendar;
 /**
  * Created by Android1 on 3/20/2015.
  */
-public class Alarm {
+public class Alarm implements Parcelable {
     private boolean on;
     private int hour;
     private int minute;
@@ -191,4 +193,117 @@ public class Alarm {
             triggered = true;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Alarm alarm = (Alarm) o;
+
+        if (hour != alarm.hour) return false;
+        if (minute != alarm.minute) return false;
+        if (repeatDays != alarm.repeatDays) return false;
+        if (!label.equals(alarm.label)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = hour;
+        result = 31 * result + minute;
+        result = 31 * result + label.hashCode();
+        result = 31 * result + (int) repeatDays;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Alarm{");
+        sb.append("on=").append(on);
+        sb.append(", hour=").append(hour);
+        sb.append(", minute=").append(minute);
+        sb.append(", label='").append(label).append('\'');
+        sb.append(", repeatDays=").append(repeatDays);
+        sb.append(", soundType=").append(soundType);
+        sb.append(", soundToPlay=").append(soundToPlay);
+        sb.append(", vibrate=").append(vibrate);
+        sb.append(", volumeCrescendo=").append(volumeCrescendo);
+        sb.append(", timeToMaxVolume=").append(timeToMaxVolume);
+        sb.append(", volume=").append(volume);
+        sb.append(", snoozeMethod=").append(snoozeMethod);
+        sb.append(", dismissMethod=").append(dismissMethod);
+        sb.append(", onInSilentMode=").append(onInSilentMode);
+        sb.append(", autoSnoozeDuration=").append(autoSnoozeDuration);
+        sb.append(", autoDismissDuration=").append(autoDismissDuration);
+        sb.append(", snoozed=").append(snoozed);
+        sb.append(", triggered=").append(triggered);
+        sb.append(", hasBeenTriggeredToday=").append(hasBeenTriggeredToday);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    protected Alarm(Parcel in) {
+        on = in.readByte() != 0x00;
+        hour = in.readInt();
+        minute = in.readInt();
+        label = in.readString();
+        repeatDays = in.readByte();
+        soundType = (SoundType) in.readValue(SoundType.class.getClassLoader());
+        soundToPlay = (Uri) in.readValue(Uri.class.getClassLoader());
+        vibrate = in.readByte() != 0x00;
+        volumeCrescendo = in.readByte() != 0x00;
+        timeToMaxVolume = (Duration) in.readValue(Duration.class.getClassLoader());
+        volume = in.readInt();
+        snoozeMethod = (SnoozeMethod) in.readValue(SnoozeMethod.class.getClassLoader());
+        dismissMethod = (DismissMethod) in.readValue(DismissMethod.class.getClassLoader());
+        onInSilentMode = in.readByte() != 0x00;
+        autoSnoozeDuration = (Duration) in.readValue(Duration.class.getClassLoader());
+        autoDismissDuration = (Duration) in.readValue(Duration.class.getClassLoader());
+        snoozed = in.readByte() != 0x00;
+        triggered = in.readByte() != 0x00;
+        hasBeenTriggeredToday = in.readByte() != 0x00;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeByte((byte) (on ? 0x01 : 0x00));
+        dest.writeInt(hour);
+        dest.writeInt(minute);
+        dest.writeString(label);
+        dest.writeByte(repeatDays);
+        dest.writeValue(soundType);
+        dest.writeValue(soundToPlay);
+        dest.writeByte((byte) (vibrate ? 0x01 : 0x00));
+        dest.writeByte((byte) (volumeCrescendo ? 0x01 : 0x00));
+        dest.writeValue(timeToMaxVolume);
+        dest.writeInt(volume);
+        dest.writeValue(snoozeMethod);
+        dest.writeValue(dismissMethod);
+        dest.writeByte((byte) (onInSilentMode ? 0x01 : 0x00));
+        dest.writeValue(autoSnoozeDuration);
+        dest.writeValue(autoDismissDuration);
+        dest.writeByte((byte) (snoozed ? 0x01 : 0x00));
+        dest.writeByte((byte) (triggered ? 0x01 : 0x00));
+        dest.writeByte((byte) (hasBeenTriggeredToday ? 0x01 : 0x00));
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Alarm> CREATOR = new Parcelable.Creator<Alarm>() {
+        @Override
+        public Alarm createFromParcel(Parcel in) {
+            return new Alarm(in);
+        }
+
+        @Override
+        public Alarm[] newArray(int size) {
+            return new Alarm[size];
+        }
+    };
 }
