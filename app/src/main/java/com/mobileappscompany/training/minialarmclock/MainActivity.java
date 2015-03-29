@@ -18,6 +18,9 @@ import android.widget.TextView;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Constants;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Duration;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -105,18 +108,31 @@ public class MainActivity extends ActionBarActivity {
             if(!currentAlarm.isOn()) continue;
             if(currentAlarm.isTriggered()) break;
 
-            currentAlarm.checkForTrigger(calendar);
+            currentAlarm.checkForTrigger(new DateTime());
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Alarm alarm = (Alarm)data.getParcelableExtra(Constants.DISMISSED_ALARM);
-        currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
-        currentAlarm.cancelTrigger(new GregorianCalendar());
-        alarmTriggered = false;
-        alarmAdapter.notifyDataSetChanged();
-        mHandler.postDelayed(updateTimeRunnable, 1000);
+        Log.d(TAG, "requestCode: " + requestCode + " resultCode: " + resultCode);
+        if(requestCode == Constants.TRIGGERED_ALARM_RESULT_CODE) {
+            if(resultCode == Constants.DISMISSED_ALARM_RESULT_CODE) {
+                Alarm alarm = (Alarm) data.getParcelableExtra(Constants.DISMISSED_ALARM);
+                Log.d(TAG,"Returned alarm: " + alarm.toString());
+                currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
+                currentAlarm.snooze(false);
+                currentAlarm.cancelTrigger(new DateTime());
+            }
+            if(resultCode == Constants.SNOOZED_ALARM_RESULT_CODE) {
+                Alarm alarm = (Alarm) data.getParcelableExtra(Constants.SNOOZED_ALARM);
+                Log.d(TAG,"Returned alarm: " + alarm.toString());
+                currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
+                currentAlarm.snooze(true);
+                currentAlarm.cancelTrigger(new DateTime());
+            }
+            alarmAdapter.notifyDataSetChanged();
+            mHandler.postDelayed(updateTimeRunnable, 1000);
+        }
     }
 
     private String buildTimeString(GregorianCalendar time, boolean showSeconds) {
@@ -168,7 +184,9 @@ public class MainActivity extends ActionBarActivity {
 
         alarm.setLabel("First alarm");
 
-        alarm.setRepeatDays(weekdays());
+        alarm.setSnoozeDuration(Duration.SIXTY_SECONDS);
+
+        alarm.setRepeatDays(weekends());
         return alarm;
     }
 
@@ -190,7 +208,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private Alarm makeAnotherAlarm() {
-        int offset = 2;
+        int offset = 5;
         GregorianCalendar calendar = new GregorianCalendar();
         Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);

@@ -5,8 +5,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import org.joda.time.DateTime;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 /**
  * Created by Android1 on 3/20/2015.
@@ -14,6 +17,7 @@ import java.util.GregorianCalendar;
 public class Alarm implements Parcelable {
     public static final String TAG = "Alarm";
 
+    private UUID id;
     private boolean on;
     private int hour;
     private int minute;
@@ -26,6 +30,7 @@ public class Alarm implements Parcelable {
     private Duration timeToMaxVolume;
     private int volume;
     private SnoozeMethod snoozeMethod;
+    private Duration snoozeDuration;
     private DismissMethod dismissMethod;
     private boolean onInSilentMode;
     private Duration autoSnoozeDuration;
@@ -36,13 +41,17 @@ public class Alarm implements Parcelable {
     private boolean hasBeenTriggeredToday;
 
     public Alarm(int hour, int minute) {
+        id = UUID.randomUUID();
         this.hour   = hour;
         this.minute = minute;
 
         //By default a new alarm will be on
         on = true;
+        snoozeDuration = Duration.TEN_MINUTES;
         hasBeenTriggeredToday = false;
     }
+
+    public UUID getId() { return id; }
 
     public boolean isOn() {
         return on;
@@ -140,6 +149,10 @@ public class Alarm implements Parcelable {
         this.snoozeMethod = snoozeMethod;
     }
 
+    public Duration getSnoozeDuration() { return snoozeDuration;}
+
+    public void setSnoozeDuration(Duration snoozeDuration) {this.snoozeDuration = snoozeDuration;}
+
     public DismissMethod getDismissMethod() {
         return dismissMethod;
     }
@@ -172,11 +185,11 @@ public class Alarm implements Parcelable {
         this.autoDismissDuration = autoDismissDuration;
     }
 
-    public void cancelTrigger(GregorianCalendar currentDay) {
+    public void cancelTrigger(DateTime currentDay) {
         triggered = false;
-        hasBeenTriggeredToday = true;
+        if(!snoozed) hasBeenTriggeredToday = true;
 
-        int dayIndex = currentDay.get(Calendar.DAY_OF_WEEK);
+        int dayIndex = currentDay.getDayOfWeek()-1;
         Day tomorrow = Day.values()[dayIndex];
 
         Log.d(TAG, "dayIndex: " + dayIndex + " tomorrow: " + tomorrow.toString());
@@ -194,16 +207,29 @@ public class Alarm implements Parcelable {
         return triggered;
     }
 
-    public void checkForTrigger(GregorianCalendar time) {
-        Day today = Day.values()[time.get(Calendar.DAY_OF_WEEK)-1];
+    public void checkForTrigger(DateTime time) {
+        Day today = Day.values()[time.getDayOfWeek()-1];
         if(hasBeenTriggeredToday) return;
 
         if(repeatDays == 0 || (repeatDays & today.getBitmask()) == today.getBitmask()) {
-            if (this.hour == time.get(Calendar.HOUR_OF_DAY) &&
-                this.minute == time.get(Calendar.MINUTE)) {
-                    triggered = true;
+            if (this.hour == time.getHourOfDay() &&
+                    this.minute == time.getMinuteOfHour()) {
+                triggered = true;
             }
         }
+    }
+
+    public boolean isSnoozed() { return snoozed; }
+
+    public void snooze(boolean snoozed) {
+        this.snoozed = snoozed;
+
+        DateTime now = new DateTime();
+        Log.d(TAG, "snooze: now: " + now.toString() + " snoozeDuration.getValue(): " + snoozeDuration.getValue());
+        now = now.plusSeconds(snoozeDuration.getValue());
+        Log.d(TAG, "snooze: now + 10mins: " + now.toString());
+        this.hour   = now.getHourOfDay();
+        this.minute = now.getMinuteOfHour();
     }
 
     @Override
@@ -213,27 +239,21 @@ public class Alarm implements Parcelable {
 
         Alarm alarm = (Alarm) o;
 
-        if (hour != alarm.hour) return false;
-        if (minute != alarm.minute) return false;
-        if (repeatDays != alarm.repeatDays) return false;
-        if (!label.equals(alarm.label)) return false;
+        if (!id.equals(alarm.id)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = hour;
-        result = 31 * result + minute;
-        result = 31 * result + label.hashCode();
-        result = 31 * result + (int) repeatDays;
-        return result;
+        return id.hashCode();
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Alarm{");
-        sb.append("on=").append(on);
+        sb.append("id=").append(id);
+        sb.append(", on=").append(on);
         sb.append(", hour=").append(hour);
         sb.append(", minute=").append(minute);
         sb.append(", label='").append(label).append('\'');
@@ -245,6 +265,7 @@ public class Alarm implements Parcelable {
         sb.append(", timeToMaxVolume=").append(timeToMaxVolume);
         sb.append(", volume=").append(volume);
         sb.append(", snoozeMethod=").append(snoozeMethod);
+        sb.append(", snoozeDuration=").append(snoozeDuration);
         sb.append(", dismissMethod=").append(dismissMethod);
         sb.append(", onInSilentMode=").append(onInSilentMode);
         sb.append(", autoSnoozeDuration=").append(autoSnoozeDuration);
@@ -257,6 +278,7 @@ public class Alarm implements Parcelable {
     }
 
     protected Alarm(Parcel in) {
+        id = (UUID) in.readValue(UUID.class.getClassLoader());
         on = in.readByte() != 0x00;
         hour = in.readInt();
         minute = in.readInt();
@@ -269,6 +291,7 @@ public class Alarm implements Parcelable {
         timeToMaxVolume = (Duration) in.readValue(Duration.class.getClassLoader());
         volume = in.readInt();
         snoozeMethod = (SnoozeMethod) in.readValue(SnoozeMethod.class.getClassLoader());
+        snoozeDuration = (Duration) in.readValue(Duration.class.getClassLoader());
         dismissMethod = (DismissMethod) in.readValue(DismissMethod.class.getClassLoader());
         onInSilentMode = in.readByte() != 0x00;
         autoSnoozeDuration = (Duration) in.readValue(Duration.class.getClassLoader());
@@ -285,6 +308,7 @@ public class Alarm implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(id);
         dest.writeByte((byte) (on ? 0x01 : 0x00));
         dest.writeInt(hour);
         dest.writeInt(minute);
@@ -297,6 +321,7 @@ public class Alarm implements Parcelable {
         dest.writeValue(timeToMaxVolume);
         dest.writeInt(volume);
         dest.writeValue(snoozeMethod);
+        dest.writeValue(snoozeDuration);
         dest.writeValue(dismissMethod);
         dest.writeByte((byte) (onInSilentMode ? 0x01 : 0x00));
         dest.writeValue(autoSnoozeDuration);

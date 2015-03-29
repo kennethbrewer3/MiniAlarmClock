@@ -3,6 +3,7 @@ package com.mobileappscompany.training.minialarmclock;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,8 @@ import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.train
 
 
 public class AlarmTriggeredActivity extends ActionBarActivity {
+
+    private static final String TAG = "AlarmTriggeredActivity";
 
     private TextView textAlarmTriggeredLabel;
     private TextView textAlarmTriggeredCurrentTime;
@@ -50,6 +53,7 @@ public class AlarmTriggeredActivity extends ActionBarActivity {
         buttonSnooze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                Log.d(TAG, "buttonSnooze: Snoozed alarm: " + alarm.toString());
                 Intent intent = new Intent();
                 intent.putExtra(Constants.SNOOZED_ALARM,alarm);
                 setResult(Constants.SNOOZED_ALARM_RESULT_CODE,intent);

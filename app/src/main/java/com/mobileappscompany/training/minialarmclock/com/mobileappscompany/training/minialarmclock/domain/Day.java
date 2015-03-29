@@ -5,13 +5,13 @@ package com.mobileappscompany.training.minialarmclock.com.mobileappscompany.trai
  */
 public enum Day {
 
-    SUNDAY   ((byte)64),
-    MONDAY   ((byte)32),
-    TUESDAY  ((byte)16),
-    WEDNESDAY((byte)8),
-    THURSDAY ((byte)4),
-    FRIDAY   ((byte)2),
-    SATURDAY ((byte)1);
+    MONDAY   ((byte)64),
+    TUESDAY  ((byte)32),
+    WEDNESDAY((byte)16),
+    THURSDAY ((byte)8),
+    FRIDAY   ((byte)4),
+    SATURDAY ((byte)2),
+    SUNDAY   ((byte)1);
 
     private byte bitmask;
 
