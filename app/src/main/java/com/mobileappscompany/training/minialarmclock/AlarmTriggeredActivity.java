@@ -35,7 +35,8 @@ public class AlarmTriggeredActivity extends ActionBarActivity {
         buttonSnooze                  = (Button)findViewById(R.id.buttonSnooze);
 
         textAlarmTriggeredLabel.setText(alarm.getLabel());
-        textAlarmTriggeredCurrentTime.setText(alarm.getHour() + ":" + alarm.getMinute());
+        textAlarmTriggeredCurrentTime.setText(alarm.getHour() + ":" +
+                                             (alarm.getMinute() < 10?"0":"") + alarm.getMinute());
         buttonDismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

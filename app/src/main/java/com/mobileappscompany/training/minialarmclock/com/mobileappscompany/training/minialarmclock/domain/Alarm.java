@@ -3,6 +3,7 @@ package com.mobileappscompany.training.minialarmclock.com.mobileappscompany.trai
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -11,6 +12,8 @@ import java.util.GregorianCalendar;
  * Created by Android1 on 3/20/2015.
  */
 public class Alarm implements Parcelable {
+    public static final String TAG = "Alarm";
+
     private boolean on;
     private int hour;
     private int minute;
@@ -173,9 +176,14 @@ public class Alarm implements Parcelable {
         triggered = false;
         hasBeenTriggeredToday = true;
 
-        int dayIndex = currentDay.get(Calendar.DAY_OF_WEEK) - 1;
-        Day tomorrow = Day.values()[dayIndex+1];
-        if((repeatDays & tomorrow.getBitmask()) == 1) {
+        int dayIndex = currentDay.get(Calendar.DAY_OF_WEEK);
+        Day tomorrow = Day.values()[dayIndex];
+
+        Log.d(TAG, "dayIndex: " + dayIndex + " tomorrow: " + tomorrow.toString());
+
+        Log.d(TAG, "repeatDays: " + repeatDays + " tomorrow.getBitmask(): " + tomorrow.getBitmask());
+        Log.d(TAG, "repeatDays & tomorrow.getBitmask(): " + (repeatDays & tomorrow.getBitmask()));
+        if((repeatDays & tomorrow.getBitmask()) == tomorrow.getBitmask()) {
             on = true;
         } else {
             on = false;
@@ -186,11 +194,15 @@ public class Alarm implements Parcelable {
         return triggered;
     }
 
-    public void checkForTrigger(int hour, int minute) {
+    public void checkForTrigger(GregorianCalendar time) {
+        Day today = Day.values()[time.get(Calendar.DAY_OF_WEEK)-1];
         if(hasBeenTriggeredToday) return;
 
-        if(this.hour == hour && this.minute == minute) {
-            triggered = true;
+        if(repeatDays == 0 || (repeatDays & today.getBitmask()) == today.getBitmask()) {
+            if (this.hour == time.get(Calendar.HOUR_OF_DAY) &&
+                this.minute == time.get(Calendar.MINUTE)) {
+                    triggered = true;
+            }
         }
     }
 

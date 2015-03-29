@@ -28,7 +28,6 @@ public class MainActivity extends ActionBarActivity {
 
     private static final String TAG = "MainActivity";
 
-    private GregorianCalendar time;
     private Handler mHandler = new Handler();
 
     private TextView textCurrentTime;
@@ -38,6 +37,7 @@ public class MainActivity extends ActionBarActivity {
 
     private AlarmArrayAdapter alarmAdapter;
     private ArrayList<Alarm> alarms;
+    private Alarm currentAlarm;
 
     private boolean alarmTriggered;
 
@@ -47,12 +47,15 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         alarms = new ArrayList();
 
-        alarmAdapter = new AlarmArrayAdapter(this,android.R.layout.simple_list_item_1,R.id.textCurrentTime,alarms);
+        alarmAdapter =
+                new AlarmArrayAdapter(this,
+                                      android.R.layout.simple_list_item_1,
+                                      R.id.textCurrentTime,alarms);
 
         is24 = DateFormat.is24HourFormat(this);
 
         textCurrentTime = (TextView)findViewById(R.id.textCurrentTime);
-        updateTime();
+        updateTime(new GregorianCalendar());
 
         mHandler.postDelayed(updateTimeRunnable, 1000);
 
@@ -74,71 +77,49 @@ public class MainActivity extends ActionBarActivity {
         alarmTriggered = false;
     }
 
-    private Alarm makeAlarm() {
-        int offset = 1;
-        GregorianCalendar calendar = new GregorianCalendar();
-        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
-                                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
-
-        alarm.setLabel("First alarm");
-        //alarm.setRepeatDays((byte)127);
-
-        return alarm;
-    }
-
-    private Alarm makeAnotherAlarm() {
-        int offset = 2;
-        GregorianCalendar calendar = new GregorianCalendar();
-        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
-
-        alarm.setLabel("Second alarm");
-
-        return alarm;
-    }
 
     private Runnable updateTimeRunnable = new Runnable () {
         public void run() {
-            updateTime();
+            GregorianCalendar time = new GregorianCalendar();
+            updateTime(time);
+            checkAlarms(time);
 
-            mHandler.postDelayed(updateTimeRunnable, 1000);
+            if(!currentAlarm.isTriggered()) {
+                mHandler.postDelayed(updateTimeRunnable, 1000);
+            } else {
+                Intent intent = new Intent(getApplicationContext(),AlarmTriggeredActivity.class);
+                intent.putExtra(Constants.TRIGGERED_ALARM,currentAlarm);
+                startActivityForResult(intent,Constants.TRIGGERED_ALARM_RESULT_CODE);
+            }
         }
     };
 
-    private void updateTime() {
+    private void updateTime(GregorianCalendar time) {
         is24 = DateFormat.is24HourFormat(this);
-        time = new GregorianCalendar();
-        textCurrentTime.setText(buildTimeString(true));
-        checkAlarms(time);
-//        Log.d(TAG,"Day of week value: " + Day.values()[time.get(Calendar.DAY_OF_WEEK)-1].toString());
+        textCurrentTime.setText(buildTimeString(time,true));
     }
 
     private void checkAlarms(GregorianCalendar calendar) {
         for(int count = 0; count < alarmAdapter.getCount(); count++) {
-            Alarm alarm = alarmAdapter.getItem(count);
-            if(!alarm.isOn()) continue;
+            currentAlarm = alarmAdapter.getItem(count);
+            if(!currentAlarm.isOn()) continue;
+            if(currentAlarm.isTriggered()) break;
 
-            alarm.checkForTrigger(calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE));
-
-            if(alarm.isTriggered() && !alarmTriggered) {
-                alarmTriggered = true;
-                Intent intent = new Intent(getApplicationContext(),AlarmTriggeredActivity.class);
-                intent.putExtra(Constants.TRIGGERED_ALARM,alarm);
-                startActivityForResult(intent,Constants.TRIGGERED_ALARM_RESULT_CODE);
-            }
+            currentAlarm.checkForTrigger(calendar);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Alarm alarm = (Alarm)data.getParcelableExtra(Constants.DISMISSED_ALARM);
-        alarmAdapter.getItem(alarmAdapter.getPosition(alarm)).setOn(false);
+        currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
+        currentAlarm.cancelTrigger(new GregorianCalendar());
         alarmTriggered = false;
         alarmAdapter.notifyDataSetChanged();
+        mHandler.postDelayed(updateTimeRunnable, 1000);
     }
 
-    private String buildTimeString(boolean showSeconds) {
+    private String buildTimeString(GregorianCalendar time, boolean showSeconds) {
         String timeString = "";
         timeString += (is24?time.get(Calendar.HOUR_OF_DAY):time.get(Calendar.HOUR));
         timeString += ":";
@@ -153,7 +134,6 @@ public class MainActivity extends ActionBarActivity {
 
         return timeString;
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -175,5 +155,48 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private Alarm makeAlarm() {
+        int offset = 1;
+        GregorianCalendar calendar = new GregorianCalendar();
+        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE)
+                        ==
+                        (60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
+
+        alarm.setLabel("First alarm");
+
+        alarm.setRepeatDays(weekdays());
+        return alarm;
+    }
+
+    private byte weekdays() {
+        byte alarmDays = (byte)0;
+        alarmDays = (byte)(alarmDays |  Day.MONDAY.getBitmask());
+        alarmDays = (byte)(alarmDays |  Day.TUESDAY.getBitmask());
+        alarmDays = (byte)(alarmDays |  Day.WEDNESDAY.getBitmask());
+        alarmDays = (byte)(alarmDays |  Day.THURSDAY.getBitmask());
+        alarmDays = (byte)(alarmDays |  Day.FRIDAY.getBitmask());
+        return alarmDays;
+    }
+
+    private byte weekends() {
+        byte alarmDays = (byte)0;
+        alarmDays = (byte)(alarmDays |  Day.SATURDAY.getBitmask());
+        alarmDays = (byte)(alarmDays |  Day.SUNDAY.getBitmask());
+        return alarmDays;
+    }
+
+    private Alarm makeAnotherAlarm() {
+        int offset = 2;
+        GregorianCalendar calendar = new GregorianCalendar();
+        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
+
+        alarm.setLabel("Second alarm");
+
+        return alarm;
     }
 }
