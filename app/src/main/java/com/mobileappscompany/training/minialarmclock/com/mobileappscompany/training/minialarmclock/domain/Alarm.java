@@ -49,6 +49,7 @@ public class Alarm implements Parcelable {
         snoozed = false;
         snoozeDuration = Duration.TEN_MINUTES;
         hasBeenTriggeredToday = false;
+        soundToPlay = null;
     }
 
     public UUID getId() { return id; }

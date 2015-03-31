@@ -181,6 +181,7 @@ public class MainActivity extends ActionBarActivity {
         alarm.setLabel("First alarm");
 
         alarm.setSnoozeDuration(Duration.SIXTY_SECONDS);
+        alarm.setVibrate(true);
 
 //        alarm.setRepeatDays(weekdays());
         return alarm;
@@ -209,6 +210,7 @@ public class MainActivity extends ActionBarActivity {
         Alarm alarm = new Alarm(alarmTime);
 
         alarm.setLabel("Second alarm");
+        alarm.setVibrate(true);
 
         return alarm;
     }
