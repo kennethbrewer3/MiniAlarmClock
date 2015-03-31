@@ -128,7 +128,6 @@ public class MainActivity extends ActionBarActivity {
                 Log.d(TAG,"Returned alarm: " + alarm.toString());
                 currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
                 currentAlarm.snooze(true);
-                currentAlarm.cancelTrigger(new DateTime());
             }
             alarmAdapter.notifyDataSetChanged();
             mHandler.postDelayed(updateTimeRunnable, 1000);
@@ -176,17 +175,14 @@ public class MainActivity extends ActionBarActivity {
 
     private Alarm makeAlarm() {
         int offset = 1;
-        GregorianCalendar calendar = new GregorianCalendar();
-        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE)
-                        ==
-                        (60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
+        DateTime alarmTime = new DateTime().plusMinutes(offset);
+        Alarm alarm = new Alarm(alarmTime);
 
         alarm.setLabel("First alarm");
 
         alarm.setSnoozeDuration(Duration.SIXTY_SECONDS);
 
-        alarm.setRepeatDays(weekends());
+//        alarm.setRepeatDays(weekdays());
         return alarm;
     }
 
@@ -209,9 +205,8 @@ public class MainActivity extends ActionBarActivity {
 
     private Alarm makeAnotherAlarm() {
         int offset = 5;
-        GregorianCalendar calendar = new GregorianCalendar();
-        Alarm alarm = new Alarm(calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE)==(60-offset)?0:calendar.get(Calendar.MINUTE) + offset);
+        DateTime alarmTime = new DateTime().plusMinutes(offset);
+        Alarm alarm = new Alarm(alarmTime);
 
         alarm.setLabel("Second alarm");
 

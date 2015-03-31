@@ -12,4 +12,5 @@
     <string name="friday_abbrev">Fri</string>
     <string name="saturday_abbrev">Sat</string>
     <string name="title_activity_alarm_triggered">AlarmTriggeredActivity</string>
+    <string name="snoozed">Snoozed</string>
 </resources>

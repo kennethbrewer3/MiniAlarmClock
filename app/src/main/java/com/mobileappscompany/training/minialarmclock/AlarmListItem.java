@@ -24,6 +24,7 @@ public class AlarmListItem extends RelativeLayout {
     private TextView     textAlarmTime;
     private TextView     textAlarmLabel;
     private TextView     textRepeatDays;
+    private TextView     textSnoozed;
 
     private Context context;
 
@@ -66,11 +67,17 @@ public class AlarmListItem extends RelativeLayout {
         textAlarmTime  = (TextView)findViewById(R.id.textAlarmTime);
         textAlarmLabel = (TextView)findViewById(R.id.textAlarmLabel);
         textRepeatDays = (TextView)findViewById(R.id.textRepeatDays);
+        textSnoozed    = (TextView)findViewById(R.id.textSnoozed);
 
         switchAlarmOn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 alarm.setOn(switchAlarmOn.isChecked());
+                if(!alarm.isOn()) {
+                    textSnoozed.setVisibility(View.INVISIBLE);
+                    alarm.snooze(false);
+                    populateItems();
+                }
                 Log.d(TAG,"switchAlarmOn: Alarm on? " + alarm.isOn());
             }
         });
@@ -79,7 +86,23 @@ public class AlarmListItem extends RelativeLayout {
 
     private void populateItems() {
         switchAlarmOn.setChecked(alarm.isOn());
-        textAlarmTime.setText("" + alarm.getHour() + ":" + (alarm.getMinute()<10?"0":"") + alarm.getMinute() );
+
+
+
+        if(alarm.isSnoozed()) {
+            textSnoozed.setVisibility(View.VISIBLE);
+            textSnoozed.setText(context.getString(R.string.snoozed));
+
+            textAlarmTime.setText("" + alarm.getSnoozedTime().getHourOfDay() + ":"
+                    + (alarm.getSnoozedTime().getMinuteOfHour()<10?"0":"")
+                    +  alarm.getSnoozedTime().getMinuteOfHour() );
+        } else {
+            textSnoozed.setVisibility(View.INVISIBLE);
+
+            textAlarmTime.setText("" + alarm.getAlarmTime().getHourOfDay() + ":"
+                    + (alarm.getAlarmTime().getMinuteOfHour()<10?"0":"")
+                    +  alarm.getAlarmTime().getMinuteOfHour() );
+        }
 
         if(alarm.getLabel() != null && alarm.getLabel().length() > 0) {
             textAlarmLabel.setText(alarm.getLabel());
@@ -102,12 +125,7 @@ public class AlarmListItem extends RelativeLayout {
     private String buildRepeatDays() {
         StringBuilder builder = new StringBuilder();
 
-        if(checkBitMask(alarm.getRepeatDays(), Day.SUNDAY.getBitmask())) {
-            builder.append(context.getString(R.string.sunday_abbrev));
-        }
-
         if(checkBitMask(alarm.getRepeatDays(),Day.MONDAY.getBitmask())) {
-            if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.monday_abbrev));
         }
 
@@ -134,6 +152,11 @@ public class AlarmListItem extends RelativeLayout {
         if(checkBitMask(alarm.getRepeatDays(),Day.SATURDAY.getBitmask())) {
             if(builder.toString().length() >= 3) builder.append(",");
             builder.append(context.getString(R.string.saturday_abbrev));
+        }
+
+        if(checkBitMask(alarm.getRepeatDays(), Day.SUNDAY.getBitmask())) {
+            if(builder.toString().length() >= 3) builder.append(",");
+            builder.append(context.getString(R.string.sunday_abbrev));
         }
 
         return builder.toString();

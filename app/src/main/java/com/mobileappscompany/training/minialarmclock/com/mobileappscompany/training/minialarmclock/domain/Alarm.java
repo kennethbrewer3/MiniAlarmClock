@@ -19,8 +19,8 @@ public class Alarm implements Parcelable {
 
     private UUID id;
     private boolean on;
-    private int hour;
-    private int minute;
+    private DateTime alarmTime;
+    private DateTime snoozedTime;
     private String label;
     private byte repeatDays;
     private SoundType soundType;
@@ -40,13 +40,13 @@ public class Alarm implements Parcelable {
     private boolean triggered;
     private boolean hasBeenTriggeredToday;
 
-    public Alarm(int hour, int minute) {
+    public Alarm(DateTime alarmTime) {
         id = UUID.randomUUID();
-        this.hour   = hour;
-        this.minute = minute;
+        this.alarmTime = alarmTime;
 
         //By default a new alarm will be on
         on = true;
+        snoozed = false;
         snoozeDuration = Duration.TEN_MINUTES;
         hasBeenTriggeredToday = false;
     }
@@ -61,21 +61,11 @@ public class Alarm implements Parcelable {
         this.on = on;
     }
 
-    public int getHour() {
-        return hour;
-    }
+    public DateTime getAlarmTime() { return alarmTime; }
 
-    public void setHour(int hour) {
-        this.hour = hour;
-    }
+    public void setAlarmTime(DateTime alarmTime) { this.alarmTime = alarmTime; }
 
-    public int getMinute() {
-        return minute;
-    }
-
-    public void setMinute(int minute) {
-        this.minute = minute;
-    }
+    public DateTime getSnoozedTime() { return snoozedTime; }
 
     public String getLabel() {
         return label;
@@ -189,14 +179,14 @@ public class Alarm implements Parcelable {
         triggered = false;
         if(!snoozed) hasBeenTriggeredToday = true;
 
-        int dayIndex = currentDay.getDayOfWeek()-1;
+        int dayIndex = currentDay.getDayOfWeek();//-1;
         Day tomorrow = Day.values()[dayIndex];
 
         Log.d(TAG, "dayIndex: " + dayIndex + " tomorrow: " + tomorrow.toString());
 
         Log.d(TAG, "repeatDays: " + repeatDays + " tomorrow.getBitmask(): " + tomorrow.getBitmask());
         Log.d(TAG, "repeatDays & tomorrow.getBitmask(): " + (repeatDays & tomorrow.getBitmask()));
-        if((repeatDays & tomorrow.getBitmask()) == tomorrow.getBitmask()) {
+        if(snoozed || (repeatDays & tomorrow.getBitmask()) == tomorrow.getBitmask()) {
             on = true;
         } else {
             on = false;
@@ -211,10 +201,25 @@ public class Alarm implements Parcelable {
         Day today = Day.values()[time.getDayOfWeek()-1];
         if(hasBeenTriggeredToday) return;
 
-        if(repeatDays == 0 || (repeatDays & today.getBitmask()) == today.getBitmask()) {
-            if (this.hour == time.getHourOfDay() &&
-                    this.minute == time.getMinuteOfHour()) {
+//        Log.d(TAG,"checkForTrigger: today: " + today);
+
+        if(!snoozed) {
+            if (repeatDays == 0 || (repeatDays & today.getBitmask()) == today.getBitmask()) {
+                if (alarmTime.getHourOfDay() == time.getHourOfDay() &&
+                        alarmTime.getMinuteOfHour() == time.getMinuteOfHour()) {
+                    triggered = true;
+                } else {
+                    triggered = false;
+                }
+            }
+        }
+
+        if(snoozed) {
+            if( snoozedTime.getHourOfDay() == time.getHourOfDay() &&
+                    snoozedTime.getMinuteOfHour() == time.getMinuteOfHour()) {
                 triggered = true;
+            } else {
+                triggered = false;
             }
         }
     }
@@ -224,12 +229,14 @@ public class Alarm implements Parcelable {
     public void snooze(boolean snoozed) {
         this.snoozed = snoozed;
 
-        DateTime now = new DateTime();
-        Log.d(TAG, "snooze: now: " + now.toString() + " snoozeDuration.getValue(): " + snoozeDuration.getValue());
-        now = now.plusSeconds(snoozeDuration.getValue());
-        Log.d(TAG, "snooze: now + 10mins: " + now.toString());
-        this.hour   = now.getHourOfDay();
-        this.minute = now.getMinuteOfHour();
+        if(snoozed) {
+            snoozedTime = new DateTime();
+            Log.d(TAG, "snooze: now: " + snoozedTime.toString() + " snoozeDuration.getValue(): "
+                                       + snoozeDuration.getValue());
+            snoozedTime = snoozedTime.plusSeconds(snoozeDuration.getValue());
+            Log.d(TAG, "snooze: now + 10 mins: " + snoozedTime.toString());
+            cancelTrigger(snoozedTime);
+        }
     }
 
     @Override
@@ -254,8 +261,8 @@ public class Alarm implements Parcelable {
         final StringBuilder sb = new StringBuilder("Alarm{");
         sb.append("id=").append(id);
         sb.append(", on=").append(on);
-        sb.append(", hour=").append(hour);
-        sb.append(", minute=").append(minute);
+        sb.append(", hour=").append(alarmTime.getHourOfDay());
+        sb.append(", minute=").append(alarmTime.getMinuteOfHour());
         sb.append(", label='").append(label).append('\'');
         sb.append(", repeatDays=").append(repeatDays);
         sb.append(", soundType=").append(soundType);
@@ -277,11 +284,12 @@ public class Alarm implements Parcelable {
         return sb.toString();
     }
 
+
     protected Alarm(Parcel in) {
         id = (UUID) in.readValue(UUID.class.getClassLoader());
         on = in.readByte() != 0x00;
-        hour = in.readInt();
-        minute = in.readInt();
+        alarmTime = (DateTime) in.readValue(DateTime.class.getClassLoader());
+        snoozedTime = (DateTime) in.readValue(DateTime.class.getClassLoader());
         label = in.readString();
         repeatDays = in.readByte();
         soundType = (SoundType) in.readValue(SoundType.class.getClassLoader());
@@ -310,8 +318,8 @@ public class Alarm implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(id);
         dest.writeByte((byte) (on ? 0x01 : 0x00));
-        dest.writeInt(hour);
-        dest.writeInt(minute);
+        dest.writeValue(alarmTime);
+        dest.writeValue(snoozedTime);
         dest.writeString(label);
         dest.writeByte(repeatDays);
         dest.writeValue(soundType);
