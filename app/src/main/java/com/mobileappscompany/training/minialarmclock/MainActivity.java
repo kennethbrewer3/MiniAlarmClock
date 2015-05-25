@@ -1,10 +1,7 @@
 package com.mobileappscompany.training.minialarmclock;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Handler;
-import android.provider.Settings;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -13,27 +10,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Constants;
-import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
-import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Duration;
-
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 
-public class MainActivity extends ActionBarActivity {
+
+public class MainActivity extends Activity implements AdapterView.OnItemClickListener {
 
     private static final String TAG = "MainActivity";
 
-    private Handler mHandler = new Handler();
-
-    private TextView textCurrentTime;
     private ListView listAlarms;
 
     private boolean is24;
@@ -42,112 +30,36 @@ public class MainActivity extends ActionBarActivity {
     private ArrayList<Alarm> alarms;
     private Alarm currentAlarm;
 
-    private boolean alarmTriggered;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         alarms = new ArrayList();
 
         alarmAdapter =
                 new AlarmArrayAdapter(this,
                                       android.R.layout.simple_list_item_1,
-                                      R.id.textCurrentTime,alarms);
+                                      R.layout.alarm_list_item,alarms);
 
         is24 = DateFormat.is24HourFormat(this);
 
-        textCurrentTime = (TextView)findViewById(R.id.textCurrentTime);
-        updateTime(new GregorianCalendar());
 
-        mHandler.postDelayed(updateTimeRunnable, 1000);
 
         listAlarms = (ListView)findViewById(R.id.listAlarms);
+        listAlarms.setItemsCanFocus(true);
 
-        alarmAdapter.add(makeAlarm());
-        alarmAdapter.add(makeAnotherAlarm());
 
         listAlarms.setAdapter(alarmAdapter);
         alarmAdapter.notifyDataSetChanged();
 
-        listAlarms.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG,"Long Cleek!");
-                return false;
-            }
-        });
-        alarmTriggered = false;
-    }
+        listAlarms.setOnItemClickListener(this);
 
-
-    private Runnable updateTimeRunnable = new Runnable () {
-        public void run() {
-            GregorianCalendar time = new GregorianCalendar();
-            updateTime(time);
-            checkAlarms(time);
-
-            if(!currentAlarm.isTriggered()) {
-                mHandler.postDelayed(updateTimeRunnable, 1000);
-            } else {
-                Intent intent = new Intent(getApplicationContext(),AlarmTriggeredActivity.class);
-                intent.putExtra(Constants.TRIGGERED_ALARM,currentAlarm);
-                startActivityForResult(intent,Constants.TRIGGERED_ALARM_RESULT_CODE);
-            }
-        }
-    };
-
-    private void updateTime(GregorianCalendar time) {
-        is24 = DateFormat.is24HourFormat(this);
-        textCurrentTime.setText(buildTimeString(time,true));
-    }
-
-    private void checkAlarms(GregorianCalendar calendar) {
-        for(int count = 0; count < alarmAdapter.getCount(); count++) {
-            currentAlarm = alarmAdapter.getItem(count);
-            if(!currentAlarm.isOn()) continue;
-            if(currentAlarm.isTriggered()) break;
-
-            currentAlarm.checkForTrigger(new DateTime());
-        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "requestCode: " + requestCode + " resultCode: " + resultCode);
-        if(requestCode == Constants.TRIGGERED_ALARM_RESULT_CODE) {
-            if(resultCode == Constants.DISMISSED_ALARM_RESULT_CODE) {
-                Alarm alarm = (Alarm) data.getParcelableExtra(Constants.DISMISSED_ALARM);
-                Log.d(TAG,"Returned alarm: " + alarm.toString());
-                currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
-                currentAlarm.snooze(false);
-                currentAlarm.cancelTrigger(new DateTime());
-            }
-            if(resultCode == Constants.SNOOZED_ALARM_RESULT_CODE) {
-                Alarm alarm = (Alarm) data.getParcelableExtra(Constants.SNOOZED_ALARM);
-                Log.d(TAG,"Returned alarm: " + alarm.toString());
-                currentAlarm = alarmAdapter.getItem(alarmAdapter.getPosition(alarm));
-                currentAlarm.snooze(true);
-            }
-            alarmAdapter.notifyDataSetChanged();
-            mHandler.postDelayed(updateTimeRunnable, 1000);
-        }
-    }
 
-    private String buildTimeString(GregorianCalendar time, boolean showSeconds) {
-        String timeString = "";
-        timeString += (is24?time.get(Calendar.HOUR_OF_DAY):time.get(Calendar.HOUR));
-        timeString += ":";
-        timeString += (time.get(Calendar.MINUTE)<10?"0":"");
-        timeString += time.get(Calendar.MINUTE);
-        if(showSeconds) {
-            timeString += ":";
-            timeString += (time.get(Calendar.SECOND)<10?"0":"");
-            timeString += time.get(Calendar.SECOND);
-        }
-        timeString += (is24?"":(time.get(Calendar.AM_PM) == Calendar.AM?"AM":"PM"));
-
-        return timeString;
     }
 
     @Override
@@ -162,56 +74,27 @@ public class MainActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(item.getItemId()) {
+            case R.id.action_add_alarm:
+                addAlarm();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
-
-    private Alarm makeAlarm() {
-        int offset = 1;
-        DateTime alarmTime = new DateTime().plusMinutes(offset);
-        Alarm alarm = new Alarm(alarmTime);
-
-        alarm.setLabel("First alarm");
-
-        alarm.setSnoozeDuration(Duration.SIXTY_SECONDS);
-        alarm.setVibrate(true);
-
-//        alarm.setRepeatDays(weekdays());
-        return alarm;
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent(getApplicationContext(),AlarmEditActivity.class);
+        intent.putExtra(Constants.EDITED_ALARM,alarms.get(position));
+        startActivityForResult(intent, Constants.EDITED_ALARM_RESULT_CODE);
     }
 
-    private byte weekdays() {
-        byte alarmDays = (byte)0;
-        alarmDays = (byte)(alarmDays |  Day.MONDAY.getBitmask());
-        alarmDays = (byte)(alarmDays |  Day.TUESDAY.getBitmask());
-        alarmDays = (byte)(alarmDays |  Day.WEDNESDAY.getBitmask());
-        alarmDays = (byte)(alarmDays |  Day.THURSDAY.getBitmask());
-        alarmDays = (byte)(alarmDays |  Day.FRIDAY.getBitmask());
-        return alarmDays;
-    }
-
-    private byte weekends() {
-        byte alarmDays = (byte)0;
-        alarmDays = (byte)(alarmDays |  Day.SATURDAY.getBitmask());
-        alarmDays = (byte)(alarmDays |  Day.SUNDAY.getBitmask());
-        return alarmDays;
-    }
-
-    private Alarm makeAnotherAlarm() {
-        int offset = 5;
-        DateTime alarmTime = new DateTime().plusMinutes(offset);
-        Alarm alarm = new Alarm(alarmTime);
-
-        alarm.setLabel("Second alarm");
-        alarm.setVibrate(true);
-
-        return alarm;
+    //Set up the intent to move to the edit alarm activity
+    //with a new alarm.
+    private void addAlarm() {
+        Intent newAlarmIntent = new Intent(this,AlarmEditActivity.class);
+        newAlarmIntent.putExtra(Constants.EDIT_ALARM_COMMAND_NAME,Constants.NEW_ALARM_COMMAND);
+        startActivityForResult(newAlarmIntent, Constants.NEW_ALARM_RESULT_CODE);
     }
 }

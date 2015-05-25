@@ -1,8 +1,8 @@
 package com.mobileappscompany.training.minialarmclock;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +16,7 @@ import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.train
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Constants;
 
 
-public class AlarmTriggeredActivity extends ActionBarActivity {
+public class AlarmTriggeredActivity extends Activity {
 
     private static final String TAG = "AlarmTriggeredActivity";
 

@@ -1,0 +1,99 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mobileappscompany.training.minialarmclock.AlarmEditActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/general_settings_label"
+                android:background="@color/primary700"
+                android:textColor="@color/white"
+                />
+            <View style="@style/Divider"/>
+
+            <TimePicker
+                android:id="@+id/timePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                />
+
+            <RadioGroup android:id="@+id/toggleGroup"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal"
+                >
+
+                <ToggleButton android:id="@+id/toggleMonday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/monday_abbrev"
+                    android:textOff="@string/monday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleTuesday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/tuesday_abbrev"
+                    android:textOff="@string/tuesday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleWednesday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/wednesday_abbrev"
+                    android:textOff="@string/wednesday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleThursday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/thursday_abbrev"
+                    android:textOff="@string/thursday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleFriday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/friday_abbrev"
+                    android:textOff="@string/friday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleSaturday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/saturday_abbrev"
+                    android:textOff="@string/saturday_abbrev"
+                    />
+                <ToggleButton android:id="@+id/toggleSunday"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textOn="@string/sunday_abbrev"
+                    android:textOff="@string/sunday_abbrev"
+                    />
+            </RadioGroup>
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

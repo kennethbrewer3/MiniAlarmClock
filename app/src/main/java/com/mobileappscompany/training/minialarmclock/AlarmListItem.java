@@ -1,20 +1,23 @@
 package com.mobileappscompany.training.minialarmclock;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Alarm;
+import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Constants;
 import com.mobileappscompany.training.minialarmclock.com.mobileappscompany.training.minialarmclock.domain.Day;
 
 /**
- * Created by Android1 on 3/20/2015.
+ * Created by Kenneth Brewer on 3/20/2015.
  */
 public class AlarmListItem extends RelativeLayout {
 
@@ -46,20 +49,6 @@ public class AlarmListItem extends RelativeLayout {
         inflater.inflate(R.layout.alarm_list_item, this);
 
         initControls();
-
-        this.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return false;
-            }
-        });
-
-        this.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Cleek!");
-            }
-        });
     }
 
     private void initControls() {
@@ -73,12 +62,12 @@ public class AlarmListItem extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 alarm.setOn(switchAlarmOn.isChecked());
-                if(!alarm.isOn()) {
+                if (!alarm.isOn()) {
                     textSnoozed.setVisibility(View.INVISIBLE);
                     alarm.snooze(false);
                     populateItems();
                 }
-                Log.d(TAG,"switchAlarmOn: Alarm on? " + alarm.isOn());
+                Log.d(TAG, "switchAlarmOn: Alarm on? " + alarm.isOn());
             }
         });
 
@@ -90,6 +79,7 @@ public class AlarmListItem extends RelativeLayout {
 
 
         if(alarm.isSnoozed()) {
+            switchAlarmOn.setVisibility(View.INVISIBLE);
             textSnoozed.setVisibility(View.VISIBLE);
             textSnoozed.setText(context.getString(R.string.snoozed));
 
@@ -97,6 +87,7 @@ public class AlarmListItem extends RelativeLayout {
                     + (alarm.getSnoozedTime().getMinuteOfHour()<10?"0":"")
                     +  alarm.getSnoozedTime().getMinuteOfHour() );
         } else {
+            switchAlarmOn.setVisibility(View.VISIBLE);
             textSnoozed.setVisibility(View.INVISIBLE);
 
             textAlarmTime.setText("" + alarm.getAlarmTime().getHourOfDay() + ":"

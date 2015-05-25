@@ -4,6 +4,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string name="action_add_alarm">Add Alarm</string>
+    <string name="action_done">Done</string>
+    <string name="action_cancel">Cancel</string>
+
     <string name="sunday_abbrev">Sun</string>
     <string name="monday_abbrev">Mon</string>
     <string name="tuesday_abbrev">Tue</string>
@@ -13,4 +17,8 @@
     <string name="saturday_abbrev">Sat</string>
     <string name="title_activity_alarm_triggered">AlarmTriggeredActivity</string>
     <string name="snoozed">Snoozed</string>
+    <string name="title_activity_edit_alarm">EditAlarmActivity</string>
+
+    <string name="general_settings_label">GENERAL SETTINGS</string>
+    <string name="set_time_button_text">Time&#10;08:00</string>
 </resources>
